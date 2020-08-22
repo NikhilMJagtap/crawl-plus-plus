@@ -1,5 +1,6 @@
 import requests
 from downloader.endpoint import Endpoint
+import time
 
 class DownloaderBusyException(Exception):
     def __init__(self, msg):
@@ -15,8 +16,10 @@ class Downloader:
         self.attempt_count = 0
         self.data = None
         self.endpoint = None
+        print(f"Downloader {id(self)} up and running!")
 
     def download(self, endpoint):
+        print(f"Download {id(self)} starting at {time.time()}")
         assert isinstance(endpoint, Endpoint), f"endpoint should be Endpoint object, found {type(endpoint)}"
         self.endpoint = endpoint
         if self.is_busy:
@@ -37,6 +40,8 @@ class Downloader:
         self.data = response
         self.busy = False
         self.endpoint = None
+        print(response)
+        print(f"Download {id(self)} closing at {time.time()}")
         return response
 
     def handle_failed_download(self):
