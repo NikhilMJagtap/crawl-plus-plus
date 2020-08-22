@@ -1,5 +1,5 @@
 import requests
-from endpoint import Endpoint
+from downloader.endpoint import Endpoint
 
 class DownloaderBusyException(Exception):
     def __init__(self, msg):
@@ -19,7 +19,7 @@ class Downloader:
     def download(self, endpoint):
         assert isinstance(endpoint, Endpoint), f"endpoint should be Endpoint object, found {type(endpoint)}"
         self.endpoint = endpoint
-        if self.is_busy = True:
+        if self.is_busy:
             raise DownloaderBusyException(f"Downloader {id(self)} busy.")
         self.is_busy = True
         url = endpoint.get_full_url()

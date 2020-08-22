@@ -1,11 +1,13 @@
-from downloader import Downloader
+from xmlrpc.server import SimpleXMLRPCServer
+from downloader.downloader import Downloader
 from collections import deque
 from config import DownloadBalancerConfig as DBC
 import threading
 
 class DownloadBalancer():
-    def __init__():
+    def __init__(self, host, port):
         self.is_ready = False
+        self.rpc_server = SimpleXMLRPCServer((host, port), logRequests=True)
         self.queue = deque()
         self.util = dict()
         for _ in range(DBC["DOWNLOADER_INIT_COUNT"]):
