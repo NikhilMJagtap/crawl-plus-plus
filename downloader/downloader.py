@@ -11,7 +11,7 @@ class DownloaderBusyException(Exception):
 
 class Downloader:
     def __init__(self):
-        self.is_busy = False
+        self.busy = False
         self.is_healthy = True
         self.attempt_count = 0
         self.data = None
@@ -19,12 +19,11 @@ class Downloader:
         print(f"Downloader {id(self)} up and running!")
 
     def download(self, endpoint):
-        print(f"Download {id(self)} starting at {time.time()}")
         assert isinstance(endpoint, Endpoint), f"endpoint should be Endpoint object, found {type(endpoint)}"
         self.endpoint = endpoint
-        if self.is_busy:
+        if self.busy:
             raise DownloaderBusyException(f"Downloader {id(self)} busy.")
-        self.is_busy = True
+        self.busy = True
         url = endpoint.get_full_url()
         try:
             response = requests.get(url, data=endpoint.get_data(), headers=endpoint.get_headers(), cookies=endpoint.get_cookies())
@@ -40,8 +39,6 @@ class Downloader:
         self.data = response
         self.busy = False
         self.endpoint = None
-        print(response)
-        print(f"Download {id(self)} closing at {time.time()}")
         return response
 
     def handle_failed_download(self):
@@ -49,7 +46,7 @@ class Downloader:
         raise NotImplementedError()
 
     def is_busy(self):
-        return self.is_busy
+        return self.busy
 
 
 
