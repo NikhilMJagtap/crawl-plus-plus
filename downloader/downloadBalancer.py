@@ -5,6 +5,7 @@ from collections import deque
 from config import DownloadBalancerConfig as DBC
 import threading
 import time
+import os
 
 class DownloadBalancer():
     def __init__(self, host, port):
@@ -59,7 +60,17 @@ class DownloadBalancer():
 
 
     def save_response(self, response):
-        print("TODO: save response")
+        # print("TODO: save response")
+
+        directories = response.url.split("/")[2:]
+
+        if not os.path.exists(os.path.join("./Data" , *directories)):
+            os.makedirs(os.path.join("./Data" , *directories))
+
+        with open(os.path.join("./Data" , *directories , "main.html") , "wb") as f:
+            f.write(response.text.encode())
+        
+
 
     def start_rpc_server(self):
         try:

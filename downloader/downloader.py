@@ -25,8 +25,11 @@ class Downloader:
             raise DownloaderBusyException(f"Downloader {id(self)} busy.")
         self.busy = True
         url = endpoint.get_full_url()
+        # print("GET " , url)
         try:
             response = requests.get(url, data=endpoint.get_data(), headers=endpoint.get_headers(), cookies=endpoint.get_cookies())
+            print("GET " , url , "    " , response.status_code)
+            # print(response.text)
         except:
             # failed download
             if self.attempt_count > 4:
