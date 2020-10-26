@@ -19,6 +19,12 @@ DownloadBalancerConfig = {
     "DOWNLOADER_UTIL_THRESH": 80, 
 }
 
+Election = {
+    "election_frequency" : 60
+    "election_timeout" : 5
+    "election_success_timeout" : 5
+}
+
 ParserConfig = {
 
 }

@@ -16,10 +16,15 @@ class DownloadBalancer():
         self.queue = deque()
         self.queue_lock = threading.Lock()
         self.util = dict()
-        for _ in range(DBC["DOWNLOADER_INIT_COUNT"]):
-            d = Downloader()
+        for i in range(DBC["DOWNLOADER_INIT_COUNT"]):
+            if i == 0:
+                d = Downloader(True , i , 0)
+            else:
+                d = Downloader(False , i , id(self.queue[0]))
+            d.balancer_port = self.port
             self.queue.append(d)
             self.util[id(d)] = deque(maxlen=DBC["DOWNLOADER_UTIL_COUNT"])
+        
         self.d_count = DBC["DOWNLOADER_INIT_COUNT"]
         self.scalar_thread = threading.Thread(target=self.scalar).start()
         self.rpc_thread = threading.Thread(target=self.start_rpc_server).start()
@@ -117,3 +122,9 @@ class DownloadBalancer():
     def __del__(self):
         self.scalar_thread.stop()
         self.rpc_thread._stop()
+
+    def send_message_to_high_priority(self , priority):
+        pass
+
+    def send_message_to_low_priority(self , priority , cordinator_id):
+        pass
