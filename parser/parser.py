@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-
+import threading
 """
 In Crawl++, GenericParser is the base of all parsers. There are many parsers built in as well.
 To create your own parser, just extend your CustomParser class to GenericParser and implement parse function.
@@ -10,6 +10,7 @@ class GenericParser:
         self.is_parsing = False
         self.data = None
         self.group = group
+        self.lock = threading.Lock()
 
     def parse(self, chunk):
         raise NotImplementedError("Parse method should be implemented and must return data")
@@ -25,8 +26,13 @@ class GenericParser:
         self.data = None
         return data
 
-    def save_data(self):
+    def save_data(self , data , file_name):
         # TODO: save self.data in db
+        self.lock.acquire()
+        with open(file_name , "ab") as f:
+            f.write(data.encode())
+            f.write("\n".encode())
+        self.lock.release()
 
 """
 TitleParser can return the title of the HTML page

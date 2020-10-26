@@ -1,4 +1,5 @@
 from xmlrpc.server import SimpleXMLRPCServer
+from xmlrpc.client import ServerProxy
 from downloader.downloader import Downloader, DownloaderBusyException
 from downloader.endpoint import Endpoint
 from collections import deque
@@ -6,6 +7,10 @@ from config import DownloadBalancerConfig as DBC
 import threading
 import time
 import os
+import sys
+
+sys.path.append("C:\\Users\\Paresh shah\\Desktop\\projects\\crawl-plus-plus\\parser\\parser.py")
+from Parser import parser 
 
 class DownloadBalancer():
     def __init__(self, host, port):
@@ -31,6 +36,12 @@ class DownloadBalancer():
         self.is_ready = True
         # register RPC functions here
         self.rpc_server.register_function(self.download)
+        self.rpc_server.register_function(self.write_response)
+        
+        if self.port == 8000:
+            self.other_server = ServerProxy("http://localhost:8001")
+        elif self.port == 8001:
+            self.other_server = ServerProxy("http://localhost:8000")
 
 
     def download(self, endpoint):
@@ -52,9 +63,10 @@ class DownloadBalancer():
 
     def download_util(self, d, endpoint, wait=1):
         try:
-            resposne = d.download(endpoint)
+            response = d.download(endpoint)
             # TODO: assert for response
-            self.save_response(resposne)
+            self.save_response(response)
+            self.parse_response(response , "title.txt")
         except DownloaderBusyException:
             # exponential backoff
             if wait > 32:
@@ -63,17 +75,32 @@ class DownloadBalancer():
             time.sleep(wait*2)
             self.download_util(d, endpoint, wait=wait*2)
 
+    def write_response(self , text , directories):
+        if not os.path.exists(os.path.join("./Data" + str(self.port) , *directories)):
+            os.makedirs(os.path.join("./Data" + str(self.port), *directories))
+
+        with open(os.path.join("./Data" + str(self.port) , *directories , "main.html") , "wb") as f:
+            f.write(text.encode("utf-8"))
 
     def save_response(self, response):
-        # print("TODO: save response")
-
         directories = response.url.split("/")[2:]
 
-        if not os.path.exists(os.path.join("./Data" , *directories)):
-            os.makedirs(os.path.join("./Data" , *directories))
+        if not os.path.exists(os.path.join("./Data" + str(self.port) , *directories)):
+            os.makedirs(os.path.join("./Data" + str(self.port), *directories))
 
-        with open(os.path.join("./Data" , *directories , "main.html") , "wb") as f:
-            f.write(response.text.encode())
+        with open(os.path.join("./Data" + str(self.port) , *directories , "main.html") , "wb") as f:
+            
+            if self.port == 8000:
+                ServerProxy("http://localhost:8001").write_response(response.text , directories)
+            elif self.port == 8001:
+                ServerProxy("http://localhost:8000").write_response(response.text , directories)
+
+            f.write(response.text.encode("utf-8"))
+        
+    def parse_response(self , response , file_name):
+        title_parser = parser.TitleParser(0)
+        title = title_parser.parse(response.text)
+        title_parser.save_data(title , file_name)
         
 
 
