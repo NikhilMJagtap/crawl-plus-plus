@@ -10,12 +10,13 @@ class DownloaderBusyException(Exception):
         return self.msg
 
 class Downloader:
-    def __init__(self):
+    def __init__(self , is_cordinator):
         self.busy = False
         self.is_healthy = True
         self.attempt_count = 0
         self.data = None
         self.endpoint = None
+        self.is_cordinator = is_cordinator
         print(f"Downloader {id(self)} up and running!")
 
     def download(self, endpoint):
@@ -51,5 +52,6 @@ class Downloader:
     def is_busy(self):
         return self.busy
 
-
+    def is_alive(self):
+        return is_healthy
 
